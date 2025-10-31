@@ -4,6 +4,7 @@ import globalErrorHandler from './middlewares/globalErrorHandler.js';
 import userRouter from './user/userRouter.js';
 
 const app = express();
+app.use(express.json()); // to parse data
 
 app.use('/api/users', userRouter);
 
