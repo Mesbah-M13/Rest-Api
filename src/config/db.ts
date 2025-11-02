@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 import { config } from './config.js';
+import chalk from 'chalk';
 
 const connectDB = async () => {
 	try {
 		// here register 1st
 		mongoose.connection.on('connected', () => {
-			console.log('Connected to database successfully');
+			console.log(chalk.cyanBright('Connected to database successfully'));
 		});
 
 		mongoose.connection.on('error', (err) => {

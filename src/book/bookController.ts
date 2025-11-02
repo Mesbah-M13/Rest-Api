@@ -1,12 +1,9 @@
-const createBook = (
-  req: Request, 
-  res: Response, 
-  next: NextFunction) => {
+import type { NextFunction, Request, Response } from 'express';
 
-res.json({message:})
+const createBook = (req: Request, res: Response, next: NextFunction) => {
+	const {} = req.body;
 
-
-
+	res.json({});
 };
 
 export { createBook };

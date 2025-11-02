@@ -1,4 +1,4 @@
-import express, { type NextFunction, type Request, type Response } from 'express';
+import { type NextFunction, type Request, type Response } from 'express';
 import type { HttpError } from 'http-errors';
 import { config } from '../config/config.js';
 
