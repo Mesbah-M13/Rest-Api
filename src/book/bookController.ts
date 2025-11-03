@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import cloudinary from '../config/cloudinary.js';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import createHttpError from 'http-errors';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,9 +25,26 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
 		format: coverImageMimeType,
 	});
 
-	console.log('UploadResult', uploadResult);
+	const bookFileName = files.file[0].filename;
+	const bookFilePath = path.resolve(__dirname, '../../public/data/uploads', bookFileName);
 
-	res.json({});
+	try {
+		const bookFileUploadResult = await cloudinary.uploader.upload(bookFilePath, {
+			resource_type: 'raw',
+			filename_override: bookFileName,
+			folder: 'book-pdfs',
+			format: 'pdf',
+		});
+
+		console.log('bookFileUploadResult', bookFileUploadResult);
+
+		console.log('UploadResult', uploadResult);
+
+		res.json({});
+	} catch (err) {
+		console.log(err);
+		return next(createHttpError(500, 'Error while uploading the files.'));
+	}
 };
 
 export { createBook };

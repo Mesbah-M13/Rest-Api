@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 // file store local
 const upload = multer({
 	dest: path.resolve(__dirname, '../../public/data/uploads'),
-	limits: { fileSize: 3e7 }, // 3e7 = 30 MB = 30*1024*1024 MB
+	limits: { fileSize: 10 * 1024 * 1024 }, // 3e7 = 30 MB = 30*1024*1024 MB
 });
 // routes
 bookRouter.post(
