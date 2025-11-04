@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import createHttpError from 'http-errors';
 import bookModel from './bookModel.js';
+import { globalIgnores } from 'eslint/config';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,7 +42,9 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
 		// console.log('bookFileUploadResult', bookFileUploadResult);
 		// console.log('UploadResult', uploadResult);
 
-		console.log('Trying to delete:', filePath, bookFilePath);
+		// console.log('Trying to delete:', filePath, bookFilePath);
+		// @ts-ignore
+		console.log('user id: ', req.userId);
 
 		const newBook = await bookModel.create({
 			title,
