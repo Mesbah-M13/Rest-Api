@@ -1,5 +1,5 @@
 import express from 'express';
-import { createBook, updateBook } from './bookController.js';
+import { createBook, listBooks, updateBook } from './bookController.js';
 import multer from 'multer';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -34,5 +34,7 @@ bookRouter.patch(
 	]),
 	updateBook
 );
+
+bookRouter.get('/', listBooks);
 
 export default bookRouter;
