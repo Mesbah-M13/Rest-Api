@@ -6,6 +6,7 @@ import path from 'path';
 import createHttpError from 'http-errors';
 import bookModel from './bookModel.js';
 import { globalIgnores } from 'eslint/config';
+import type { AuthRequest } from '../middlewares/authenticate.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,13 +44,13 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
 		// console.log('UploadResult', uploadResult);
 
 		// console.log('Trying to delete:', filePath, bookFilePath);
-		// @ts-ignore
-		console.log('user id: ', req.userId);
+		// console.log('user id: ', req.userId);
+		const _req = req as AuthRequest;
 
 		const newBook = await bookModel.create({
 			title,
 			genre,
-			author: '690537df68c9d401eb53455b',
+			author: _req.userId,
 			coverImage: uploadResult.secure_url,
 			file: bookFileUploadResult.secure_url,
 		});
