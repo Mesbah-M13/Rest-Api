@@ -106,6 +106,20 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
 	const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 	let completeCoverImage = '';
 	if (files.coverImage) {
+		// *** --- Delete old image from Cloudinary first ---
+
+		try {
+			const oldCoverParts = book.coverImage.split('/');
+			const oldCoverPublicId =
+				oldCoverParts.at(-2) + '/' + oldCoverParts.at(-1)?.split('.').at(-2);
+			await cloudinary.uploader.destroy(oldCoverPublicId);
+			console.log('🧹 Old cover image deleted');
+		} catch (err) {
+			console.warn('⚠️ Failed to delete old cover image:', err.message);
+		}
+
+		// --- Upload new one ---
+
 		const filename = files.coverImage[0].filename;
 		const converMimeType = files.coverImage[0].mimetype.split('/').at(-1);
 		// send files to cloudinary
@@ -124,6 +138,18 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
 	// check if file field is exists.
 	let completeFileName = '';
 	if (files.file) {
+		// *** --- Delete old book file from Cloudinary first ---
+		try {
+			const oldFileParts = book.file.split('/');
+			const oldFilePublicId = oldFileParts.at(-2) + '/' + oldFileParts.at(-1);
+			await cloudinary.uploader.destroy(oldFilePublicId, { resource_type: 'raw' });
+			console.log('🧹 Old book file deleted');
+		} catch (err) {
+			console.warn('⚠️ Failed to delete old book file:', err.message);
+		}
+
+		// --- Upload new file ---
+
 		const bookFilePath = path.resolve(
 			__dirname,
 			'../../public/data/uploads/' + files.file[0].filename
@@ -142,6 +168,8 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
 		completeFileName = uploadResultPdf.secure_url;
 		await fs.promises.unlink(bookFilePath);
 	}
+
+	// ✅ Finally, update book info
 
 	const updatedBook = await bookModel.findOneAndUpdate(
 		{
