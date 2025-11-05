@@ -7,6 +7,7 @@ import createHttpError from 'http-errors';
 import bookModel from './bookModel.js';
 import { globalIgnores } from 'eslint/config';
 import type { AuthRequest } from '../middlewares/authenticate.js';
+import mongoose from 'mongoose';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -171,4 +172,70 @@ const listBooks = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
-export { createBook, updateBook, listBooks };
+const getSingleBook = async (req: Request, res: Response, next: NextFunction) => {
+	const bookId = req.params.bookId;
+
+	// ✅ Step 1: validate ObjectId format before querying
+	// if (!mongoose.Types.ObjectId.isValid(bookId)) {
+	// 	return next(createHttpError(400, 'Invalid book ID format'));
+	// }
+	try {
+		const book = await bookModel.findOne({
+			_id: bookId,
+		});
+		if (!book) {
+			return next(createHttpError(404, 'Book not found'));
+		}
+
+		return res.json(book);
+	} catch (err) {
+		return next(createHttpError(500, 'Error while trying to get 🔖 Signle book info '));
+	}
+};
+
+const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
+	const bookId = req.params.bookId;
+
+	const book = await bookModel.findOne({
+		_id: bookId,
+	});
+	if (!book) {
+		return createHttpError(404, '⚔️Book not found');
+	}
+
+	// Check access
+	const _req = req as AuthRequest;
+	if (book.author.toString() !== _req.userId) {
+		return next(createHttpError(403, 'You can not delete the book.'));
+	}
+
+	// book-covers/kd8mpa0dqxknj45jma9j
+	// https://res.cloudinary.com/dambdugfp/image/upload/v1762232392/book-covers/kd8mpa0dqxknj45jma9j.jpg
+	const coverFileSplits = book?.coverImage.split('/');
+	const coverImagePublicId =
+		coverFileSplits.at(-2) + '/' + coverFileSplits.at(-1)?.split('.').at(-2);
+
+	console.log('coverImagePublicId', coverImagePublicId);
+
+	const bookFileSplits = book.file.split('/');
+	const bookFilePublicId = bookFileSplits.at(-2) + '/' + bookFileSplits.at(-1);
+	console.log('bookFilePublicId', bookFilePublicId);
+
+	// todo: add try error block
+	// await cloudinary.uploader.destroy(coverImagePublicId);
+	// await cloudinary.uploader.destroy(bookFilePublicId, {
+	// 	resource_type: 'raw',
+	// });
+
+	try {
+		await cloudinary.uploader.destroy(coverImagePublicId);
+		await cloudinary.uploader.destroy(bookFilePublicId, { resource_type: 'raw' });
+	} catch (err) {
+		console.warn('⚠️ Could not delete some Cloudinary files:', err.message);
+	}
+
+	await bookModel.deleteOne({ _id: bookId });
+	// await cloudinary.uploader.destroy()
+	return res.sendStatus(204);
+};
+export { createBook, updateBook, listBooks, getSingleBook, deleteBook };
